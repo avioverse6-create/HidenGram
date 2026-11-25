@@ -30,6 +30,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.styropyr0.prismal.components.LocalPrismalBottomTabHighlightedIndex
 import com.styropyr0.prismal.components.PrismalGlassBottomTab
 import com.styropyr0.prismal.components.PrismalGlassBottomTabs
 import com.styropyr0.prismal.sources.prismalGlassLayer
@@ -82,11 +83,9 @@ private fun HidenGramHome() {
     var selected by remember { mutableIntStateOf(0) }
     val backdrop = rememberPrismalGlassLayer()
 
-    // Register the actual screen layer as a live sampling source. Without this,
-    // the bar can draw as a nearly transparent outline instead of refracting content.
-    backdrop.readSamplingState()
-
     Box(Modifier.fillMaxSize().background(Black)) {
+        // Prismal's documented backdrop pattern: capture the actual screen
+        // content behind the glass, then render its original tab component above it.
         Column(
             Modifier
                 .fillMaxSize()
@@ -109,61 +108,50 @@ private fun HidenGramHome() {
             }
         }
 
+        // Use PrismalAGSL's complete, unmodified bottom-tabs implementation
+        // with its documented defaults: no custom overlay, tint or replacement lens.
         PrismalGlassBottomTabs(
             selectedTabIndex = { selected },
             onTabSelected = { selected = it },
             backdrop = backdrop,
             tabsCount = 4,
+            tintDropletContent = false,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp)
+                .padding(horizontal = 20.dp)
                 .padding(
                     bottom = WindowInsets.navigationBars.asPaddingValues()
                         .calculateBottomPadding() + 8.dp
-                ),
-            adaptiveLuminance = true,
-            luminance = { 0.16f },
-            tintDropletContent = true,
-            dropletContentTint = AccentBlue,
-            blurRadius = 22.dp,
-            refractionHeight = 30.dp,
-            refractionAmount = 44.dp,
-            dropletBlurRadius = 18.dp,
-            dropletRefractionHeight = 25.dp,
-            dropletRefractionAmount = 32.dp,
-            dropletChromaticAberration = 0.22f,
-            dropletContentScaleX = 1f,
-            dropletContentScaleY = 1f,
-            pressGlow = 0.82f,
-            // GPU layer scaling keeps the spring animation fluid instead of
-            // forcing a full layout pass on every animation frame.
-            renderWithLowOverhead = false,
-            hapticFeedback = true
+                )
         ) {
-            Tab(Icons.Filled.ChatBubble, "Чаты") { selected = 0 }
-            Tab(Icons.Filled.Contacts, "Контакты") { selected = 1 }
-            Tab(Icons.Filled.Settings, "Настройки") { selected = 2 }
-            Tab(Icons.Filled.Person, "Профиль") { selected = 3 }
+            Tab(index = 0, icon = Icons.Filled.ChatBubble, title = "Чаты") { selected = 0 }
+            Tab(index = 1, icon = Icons.Filled.Contacts, title = "Контакты") { selected = 1 }
+            Tab(index = 2, icon = Icons.Filled.Settings, title = "Настройки") { selected = 2 }
+            Tab(index = 3, icon = Icons.Filled.Person, title = "Профиль") { selected = 3 }
         }
     }
 }
 
 @Composable
-private fun RowScope.Tab(icon: ImageVector, title: String, click: () -> Unit) {
+private fun RowScope.Tab(index: Int, icon: ImageVector, title: String, click: () -> Unit) {
+    val highlightedIndex = LocalPrismalBottomTabHighlightedIndex.current()
+    val selected = highlightedIndex == index
+    val contentColor = if (selected) Color.White else Color(0xFFB8B8BD)
+
     PrismalGlassBottomTab(onClick = click) {
         Icon(
             imageVector = icon,
             contentDescription = title,
-            tint = Color.White,
+            tint = contentColor,
             modifier = Modifier.size(25.dp)
         )
         Text(
             text = title,
-            color = Color.White,
+            color = contentColor,
             fontSize = 12.sp,
             lineHeight = 14.sp,
-            fontWeight = FontWeight.SemiBold,
+            fontWeight = if (selected) FontWeight.Bold else FontWeight.SemiBold,
             textAlign = TextAlign.Center,
             maxLines = 1,
             softWrap = false,
