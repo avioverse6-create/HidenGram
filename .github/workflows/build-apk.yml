@@ -33,6 +33,7 @@ jobs:
           git -C PrismalAGSL checkout 0da7d9c0676bd9a9eb999d2b0905de880378da9d
           mkdir -p gradle
           cp PrismalAGSL/gradle/libs.versions.toml gradle/libs.versions.toml
+          set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
           p = Path("PrismalAGSL/Prismal/build.gradle.kts")
