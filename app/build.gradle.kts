@@ -5,7 +5,7 @@ plugins {
 }
 android {
     namespace = "com.avioverse.hidengram"
-    compileSdk = 36
+    compileSdk = 37
     defaultConfig {
         applicationId = "com.avioverse.hidengram"
         minSdk = 25
@@ -29,5 +29,5 @@ dependencies {
     implementation("androidx.compose.foundation:foundation")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material-icons-extended")
-    implementation("com.github.styropyr0.PrismalAGSL:Prismal:1.0.7")
+    implementation("com.github.styropyr0:PrismalAGSL:Prismal:1.0.7")
 }
