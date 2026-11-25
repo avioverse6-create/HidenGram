@@ -47,7 +47,7 @@ jobs:
               'id("com.android.library")\n    id("org.jetbrains.kotlin.plugin.compose")',
               'id("com.android.library")\n    id("org.jetbrains.kotlin.android")\n    id("org.jetbrains.kotlin.plugin.compose")'
           )
-          s, count = re.subn(r"compileSdk\\s*\\{\\s*version\\s*=\\s*release\\(37\\)\\s*\\}", "compileSdk = 36", s)
+          s, count = re.subn(r"compileSdk\s*\{\s*version\s*=\s*release\(37\)\s*\}", "compileSdk = 36", s)
           if count != 1:
               raise SystemExit(f"Expected one compileSdk 37 block, found {count}")
           if 'id("org.jetbrains.kotlin.android")' not in s:
