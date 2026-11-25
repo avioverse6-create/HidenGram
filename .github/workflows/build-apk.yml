@@ -47,7 +47,7 @@ jobs:
               'id("com.android.library")\n    id("org.jetbrains.kotlin.plugin.compose")',
               'id("com.android.library")\n    id("org.jetbrains.kotlin.android")\n    id("org.jetbrains.kotlin.plugin.compose")'
           )
-          s, count = re.subn(r"compileSdk\s*\{\s*version\s*=\s*release\(37\)\s*\}", "compileSdk = 36", s)
+          s, count = re.subn(r"compileSdk\\s*\\{\\s*version\\s*=\\s*release\\(37\\)\\s*\\}", "compileSdk = 36", s)
           if count != 1:
               raise SystemExit(f"Expected one compileSdk 37 block, found {count}")
           if 'id("org.jetbrains.kotlin.android")' not in s:
@@ -57,61 +57,6 @@ jobs:
           if "sourceCompatibility = JavaVersion.VERSION_17" not in s or "targetCompatibility = JavaVersion.VERSION_17" not in s:
               raise SystemExit("Could not align Prismal Java target to 17")
           p.write_text(s)
-
-          # Tune the upstream Prismal bottom bar itself: a visible frosted-glass
-          # body and a properly defined selected capsule, not a faint outline.
-          glass = Path("PrismalAGSL/Prismal/src/main/java/com/styropyr0/prismal/components/PrismalGlassBottomTabs.kt")
-          g = glass.read_text()
-          g = g.replace(
-              'Color(0xFFFAFAFA).copy(0.4f)',
-              'Color(0xFFFAFAFA).copy(0.64f)'
-          )
-          g = g.replace(
-              'Color(0xFF121212).copy(0.4f)',
-              'Color(0xFF17191E).copy(0.78f)'
-          )
-          g = g.replace(
-              'else Color.White.copy(0.1f)',
-              'else Color.White.copy(0.24f)'
-          )
-          if 'Color(0xFF17191E).copy(0.78f)' not in g:
-              raise SystemExit("Prismal dark glass surface tuning was not applied")
-          if 'else Color.White.copy(0.24f)' not in g:
-              raise SystemExit("Prismal selected capsule highlight tuning was not applied")
-          glass.write_text(g)
-
-          # The upstream selection lens is intentionally dormant at rest (progress=0),
-          # which makes the selected item look like a flat grey pill. Keep the original
-          # Prismal lens active at rest, then let press/drag animate it to full intensity.
-          g = glass.read_text()
-          g = g.replace(
-              "refractionHeight = with(density) { dropletRefractionHeight.toPx() } * effectScale * progress,",
-              "refractionHeight = with(density) { dropletRefractionHeight.toPx() } * effectScale * (0.78f + 0.22f * progress),"
-          )
-          g = g.replace(
-              "refractionAmount = with(density) { dropletRefractionAmount.toPx() } * effectScale * progress,",
-              "refractionAmount = with(density) { dropletRefractionAmount.toPx() } * effectScale * (0.78f + 0.22f * progress),"
-          )
-          g = g.replace(
-              "chromaticAberration = dropletChromaticAberration.coerceAtLeast(0f)",
-              "chromaticAberration = (dropletChromaticAberration * (0.78f + 0.22f * progress)).coerceAtLeast(0f)"
-          )
-          g = g.replace(
-              "PrismalSpecular.Default.copy(alpha = progress)",
-              "PrismalSpecular.Default.copy(alpha = 0.78f + 0.22f * progress)"
-          )
-          g = g.replace(
-              "PrismalDepthShadow(alpha = progress)",
-              "PrismalDepthShadow(alpha = 0.72f + 0.28f * progress)"
-          )
-          g = g.replace(
-              "alpha = lerp(RestingInsetAlpha, 1f, progress)",
-              "alpha = lerp(0.78f, 1f, progress)"
-          )
-          if "0.78f + 0.22f * progress" not in g:
-              raise SystemExit("Always-on Prismal selection lens patch did not apply")
-          glass.write_text(g)
-          print("Configured original Prismal source: full-surface glass + always-on refractive selection lens")
           PY
       - name: Install Gradle
         run: |
