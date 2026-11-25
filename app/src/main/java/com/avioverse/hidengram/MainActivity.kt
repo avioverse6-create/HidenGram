@@ -115,7 +115,8 @@ private fun HidenGramHome() {
             onTabSelected = { selected = it },
             backdrop = backdrop,
             tabsCount = 4,
-            tintDropletContent = false,
+            tintDropletContent = true,
+            dropletContentTint = null,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
