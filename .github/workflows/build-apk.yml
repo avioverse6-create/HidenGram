@@ -28,23 +28,32 @@ jobs:
       - name: Install Android SDK packages
         run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
       - name: Fetch the original PrismalAGSL source
+        shell: bash
         run: |
+          set -euo pipefail
           git clone --filter=blob:none https://github.com/styropyr0/PrismalAGSL.git PrismalAGSL
           git -C PrismalAGSL checkout 0da7d9c0676bd9a9eb999d2b0905de880378da9d
           mkdir -p gradle
           cp PrismalAGSL/gradle/libs.versions.toml gradle/libs.versions.toml
           sed -i 's/^coreKtx = "1.19.0"/coreKtx = "1.17.0"/' gradle/libs.versions.toml
-          set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
+          import re
           p = Path("PrismalAGSL/Prismal/build.gradle.kts")
           s = p.read_text()
           s = s.replace("alias(libs.plugins.android.library)", 'id("com.android.library")')
           s = s.replace("alias(libs.plugins.compose.compiler)", 'id("org.jetbrains.kotlin.plugin.compose")')
-          s = s.replace("compileSdk {\n        version = release(37)\n    }", "compileSdk = 36")
-          if "compileSdk = 36" not in s:
-              raise SystemExit("Could not adapt Prismal module compileSdk block")
+          s = s.replace(
+              'id("com.android.library")\n    id("org.jetbrains.kotlin.plugin.compose")',
+              'id("com.android.library")\n    id("org.jetbrains.kotlin.android")\n    id("org.jetbrains.kotlin.plugin.compose")'
+          )
+          s, count = re.subn(r"compileSdk\s*\{\s*version\s*=\s*release\(37\)\s*\}", "compileSdk = 36", s)
+          if count != 1:
+              raise SystemExit(f"Expected one compileSdk 37 block, found {count}")
+          if 'id("org.jetbrains.kotlin.android")' not in s:
+              raise SystemExit("Kotlin Android plugin missing from Prismal module")
           p.write_text(s)
+          print("Configured Prismal source module for Kotlin + Compose on SDK 36")
           PY
       - name: Install Gradle
         run: |
