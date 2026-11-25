@@ -6,6 +6,7 @@ on:
     paths:
       - '**.kt'
       - '**.kts'
+      - '**.toml'
       - 'app/src/main/AndroidManifest.xml'
       - '.github/workflows/build-apk.yml'
 
@@ -13,19 +14,36 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout HidenGram
         uses: actions/checkout@v4
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-      - name: Set up Android SDK
+      - name: Set up Android SDK 36
         uses: android-actions/setup-android@v3
         with:
           packages: platform-tools
-      - name: Install Android SDK 36
+      - name: Install Android SDK packages
         run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
+      - name: Fetch the original PrismalAGSL source
+        run: |
+          git clone --filter=blob:none https://github.com/styropyr0/PrismalAGSL.git PrismalAGSL
+          git -C PrismalAGSL checkout 0da7d9c0676bd9a9eb999d2b0905de880378da9d
+          mkdir -p gradle
+          cp PrismalAGSL/gradle/libs.versions.toml gradle/libs.versions.toml
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("PrismalAGSL/Prismal/build.gradle.kts")
+          s = p.read_text()
+          s = s.replace("alias(libs.plugins.android.library)", 'id("com.android.library")')
+          s = s.replace("alias(libs.plugins.compose.compiler)", 'id("org.jetbrains.kotlin.plugin.compose")')
+          s = s.replace("compileSdk {\n        version = release(37)\n    }", "compileSdk = 36")
+          if "compileSdk = 36" not in s:
+              raise SystemExit("Could not adapt Prismal module compileSdk block")
+          p.write_text(s)
+          PY
       - name: Install Gradle
         run: |
           curl -L https://services.gradle.org/distributions/gradle-8.13-bin.zip -o /tmp/gradle.zip
