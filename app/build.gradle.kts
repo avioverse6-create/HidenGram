@@ -3,6 +3,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
 }
+// PrismalAGSL integration build
 android {
     namespace = "com.avioverse.hidengram"
     compileSdk = 36
