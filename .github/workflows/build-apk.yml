@@ -57,7 +57,29 @@ jobs:
           if "sourceCompatibility = JavaVersion.VERSION_17" not in s or "targetCompatibility = JavaVersion.VERSION_17" not in s:
               raise SystemExit("Could not align Prismal Java target to 17")
           p.write_text(s)
-          print("Configured Prismal source module for Kotlin + Compose on SDK 36")
+
+          # Tune the upstream Prismal bottom bar itself: a visible frosted-glass
+          # body and a properly defined selected capsule, not a faint outline.
+          glass = Path("PrismalAGSL/Prismal/src/main/java/com/styropyr0/prismal/components/PrismalGlassBottomTabs.kt")
+          g = glass.read_text()
+          g = g.replace(
+              'Color(0xFFFAFAFA).copy(0.4f)',
+              'Color(0xFFFAFAFA).copy(0.64f)'
+          )
+          g = g.replace(
+              'Color(0xFF121212).copy(0.4f)',
+              'Color(0xFF17191E).copy(0.78f)'
+          )
+          g = g.replace(
+              'else Color.White.copy(0.1f)',
+              'else Color.White.copy(0.24f)'
+          )
+          if 'Color(0xFF17191E).copy(0.78f)' not in g:
+              raise SystemExit("Prismal dark glass surface tuning was not applied")
+          if 'else Color.White.copy(0.24f)' not in g:
+              raise SystemExit("Prismal selected capsule highlight tuning was not applied")
+          glass.write_text(g)
+          print("Configured original Prismal source for SDK 36 and stronger full-surface liquid glass")
           PY
       - name: Install Gradle
         run: |
