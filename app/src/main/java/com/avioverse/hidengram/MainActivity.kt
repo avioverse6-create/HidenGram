@@ -31,6 +31,7 @@ import com.styropyr0.prismal.components.PrismalGlassBottomTabs
 import com.styropyr0.prismal.sources.prismalGlassLayer
 import com.styropyr0.prismal.sources.rememberPrismalGlassLayer
 
+// Initial HidenGram chat screen
 private val Black = Color(0xFF000000)
 private val Blue = Color(0xFF2196F3)
 
