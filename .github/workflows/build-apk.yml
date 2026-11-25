@@ -52,6 +52,10 @@ jobs:
               raise SystemExit(f"Expected one compileSdk 37 block, found {count}")
           if 'id("org.jetbrains.kotlin.android")' not in s:
               raise SystemExit("Kotlin Android plugin missing from Prismal module")
+          s = s.replace("sourceCompatibility = JavaVersion.VERSION_11", "sourceCompatibility = JavaVersion.VERSION_17")
+          s = s.replace("targetCompatibility = JavaVersion.VERSION_11", "targetCompatibility = JavaVersion.VERSION_17")
+          if "sourceCompatibility = JavaVersion.VERSION_17" not in s or "targetCompatibility = JavaVersion.VERSION_17" not in s:
+              raise SystemExit("Could not align Prismal Java target to 17")
           p.write_text(s)
           print("Configured Prismal source module for Kotlin + Compose on SDK 36")
           PY
