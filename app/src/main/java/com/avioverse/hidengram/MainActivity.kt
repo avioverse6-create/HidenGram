@@ -102,7 +102,7 @@ private fun HidenGramHome() {
             )
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 28.dp),
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 124.dp),
                 verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
                 items(chats) { ChatRow(it) }
@@ -117,7 +117,7 @@ private fun HidenGramHome() {
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .padding(horizontal = 18.dp)
+                .padding(horizontal = 12.dp)
                 .padding(
                     bottom = WindowInsets.navigationBars.asPaddingValues()
                         .calculateBottomPadding() + 8.dp
@@ -126,19 +126,19 @@ private fun HidenGramHome() {
             luminance = { 0.16f },
             tintDropletContent = true,
             dropletContentTint = AccentBlue,
-            blurRadius = 15.dp,
-            refractionHeight = 25.dp,
-            refractionAmount = 38.dp,
-            dropletBlurRadius = 11.dp,
-            dropletRefractionHeight = 22.dp,
-            dropletRefractionAmount = 27.dp,
+            blurRadius = 22.dp,
+            refractionHeight = 30.dp,
+            refractionAmount = 44.dp,
+            dropletBlurRadius = 18.dp,
+            dropletRefractionHeight = 25.dp,
+            dropletRefractionAmount = 32.dp,
             dropletChromaticAberration = 0.22f,
-            dropletContentScaleX = 0.96f,
-            dropletContentScaleY = 0.96f,
+            dropletContentScaleX = 1f,
+            dropletContentScaleY = 1f,
             pressGlow = 0.82f,
             // GPU layer scaling keeps the spring animation fluid instead of
             // forcing a full layout pass on every animation frame.
-            renderWithLowOverhead = true,
+            renderWithLowOverhead = false,
             hapticFeedback = true
         ) {
             Tab(Icons.Filled.ChatBubble, "Чаты") { selected = 0 }
