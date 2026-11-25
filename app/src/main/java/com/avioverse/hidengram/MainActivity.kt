@@ -16,14 +16,18 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.styropyr0.prismal.components.PrismalGlassBottomTab
@@ -31,9 +35,15 @@ import com.styropyr0.prismal.components.PrismalGlassBottomTabs
 import com.styropyr0.prismal.sources.prismalGlassLayer
 import com.styropyr0.prismal.sources.rememberPrismalGlassLayer
 
-// Initial HidenGram chat screen
 private val Black = Color(0xFF000000)
-private val Blue = Color(0xFF2196F3)
+private val AccentBlue = Color(0xFF2997FF)
+private val HidenDark = darkColorScheme(
+    primary = AccentBlue,
+    background = Black,
+    surface = Color(0xFF111114),
+    onBackground = Color.White,
+    onSurface = Color.White
+)
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,11 +51,19 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         window.statusBarColor = android.graphics.Color.BLACK
         window.navigationBarColor = android.graphics.Color.BLACK
-        setContent { MaterialTheme { HidenGramHome() } }
+        window.decorView.systemUiVisibility = 0
+        setContent { MaterialTheme(colorScheme = HidenDark) { HidenGramHome() } }
     }
 }
 
-private data class Chat(val name: String, val message: String, val time: String, val initials: String, val color: Color)
+private data class Chat(
+    val name: String,
+    val message: String,
+    val time: String,
+    val initials: String,
+    val color: Color
+)
+
 private val chats = listOf(
     Chat("Александр", "Ты уже посмотрел обновление?", "12:48", "А", Color(0xFF34495E)),
     Chat("Избранное", "Заметки и сохранённые сообщения", "12:31", "★", Color(0xFF455A64)),
@@ -63,39 +81,64 @@ private val chats = listOf(
 private fun HidenGramHome() {
     var selected by remember { mutableIntStateOf(0) }
     val backdrop = rememberPrismalGlassLayer()
+
+    // Register the actual screen layer as a live sampling source. Without this,
+    // the bar can draw as a nearly transparent outline instead of refracting content.
+    backdrop.readSamplingState()
+
     Box(Modifier.fillMaxSize().background(Black)) {
         Column(
-            Modifier.fillMaxSize()
+            Modifier
+                .fillMaxSize()
                 .prismalGlassLayer(backdrop)
                 .padding(top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding())
         ) {
-            Text("Чаты", Modifier.padding(start = 22.dp, top = 18.dp, bottom = 16.dp),
-                color = Color.White, fontSize = 29.sp, fontWeight = FontWeight.Bold)
+            Text(
+                "Чаты",
+                Modifier.padding(start = 22.dp, top = 18.dp, bottom = 16.dp),
+                color = Color.White,
+                fontSize = 29.sp,
+                fontWeight = FontWeight.Bold
+            )
             LazyColumn(
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 112.dp),
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 28.dp),
                 verticalArrangement = Arrangement.spacedBy(2.dp)
-            ) { items(chats) { ChatRow(it) } }
+            ) {
+                items(chats) { ChatRow(it) }
+            }
         }
+
         PrismalGlassBottomTabs(
             selectedTabIndex = { selected },
             onTabSelected = { selected = it },
             backdrop = backdrop,
             tabsCount = 4,
-            modifier = Modifier.align(Alignment.BottomCenter)
-                .fillMaxWidth().padding(horizontal = 18.dp)
-                .padding(bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 8.dp),
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .padding(horizontal = 18.dp)
+                .padding(
+                    bottom = WindowInsets.navigationBars.asPaddingValues()
+                        .calculateBottomPadding() + 8.dp
+                ),
+            adaptiveLuminance = true,
+            luminance = { 0.16f },
             tintDropletContent = true,
-            dropletContentTint = Blue,
-            blurRadius = 5.dp,
-            refractionHeight = 17.dp,
-            refractionAmount = 30.dp,
-            dropletRefractionHeight = 15.dp,
-            dropletRefractionAmount = 18.dp,
-            dropletChromaticAberration = 0.32f,
-            dropletContentScaleX = 0.94f,
-            dropletContentScaleY = 0.94f,
-            pressGlow = 0.55f,
-            renderWithLowOverhead = false,
+            dropletContentTint = AccentBlue,
+            blurRadius = 15.dp,
+            refractionHeight = 25.dp,
+            refractionAmount = 38.dp,
+            dropletBlurRadius = 11.dp,
+            dropletRefractionHeight = 22.dp,
+            dropletRefractionAmount = 27.dp,
+            dropletChromaticAberration = 0.22f,
+            dropletContentScaleX = 0.96f,
+            dropletContentScaleY = 0.96f,
+            pressGlow = 0.82f,
+            // GPU layer scaling keeps the spring animation fluid instead of
+            // forcing a full layout pass on every animation frame.
+            renderWithLowOverhead = true,
             hapticFeedback = true
         ) {
             Tab(Icons.Filled.ChatBubble, "Чаты") { selected = 0 }
@@ -109,15 +152,38 @@ private fun HidenGramHome() {
 @Composable
 private fun RowScope.Tab(icon: ImageVector, title: String, click: () -> Unit) {
     PrismalGlassBottomTab(onClick = click) {
-        Icon(icon, contentDescription = title, tint = Color.White, modifier = Modifier.size(27.dp))
-        Text(title, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, maxLines = 1)
+        Icon(
+            imageVector = icon,
+            contentDescription = title,
+            tint = Color.White,
+            modifier = Modifier.size(25.dp)
+        )
+        Text(
+            text = title,
+            color = Color.White,
+            fontSize = 12.sp,
+            lineHeight = 14.sp,
+            fontWeight = FontWeight.SemiBold,
+            textAlign = TextAlign.Center,
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Clip,
+            letterSpacing = (-0.25).sp,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 1.dp)
+        )
     }
 }
 
 @Composable
 private fun ChatRow(chat: Chat) {
-    Row(Modifier.fillMaxWidth().height(76.dp), verticalAlignment = Alignment.CenterVertically) {
-        Box(Modifier.size(54.dp).clip(CircleShape).background(chat.color), contentAlignment = Alignment.Center) {
+    Row(
+        Modifier.fillMaxWidth().height(76.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            Modifier.size(54.dp).clip(CircleShape).background(chat.color),
+            contentAlignment = Alignment.Center
+        ) {
             Text(chat.initials, color = Color.White, fontSize = 19.sp, fontWeight = FontWeight.Bold)
         }
         Spacer(Modifier.width(13.dp))
