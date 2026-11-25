@@ -5,7 +5,7 @@ plugins {
 }
 android {
     namespace = "com.avioverse.hidengram"
-    compileSdk = 37
+    compileSdk = 36
     defaultConfig {
         applicationId = "com.avioverse.hidengram"
         minSdk = 25
